@@ -11,7 +11,7 @@ import { validateToken } from "./controller/ValidateToken";
 config();
 
 const app : Application = express();
-const PREFIX = process.env.PREFIX ?? '';
+const PREFIX = '/api/v1';
 
 
 //settings

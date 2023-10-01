@@ -1,12 +1,14 @@
-import { Product } from "../schema/Products";
+import { PrismaClient } from "@prisma/client";
 import { Response,Request } from "express";
 import { CustomRequest } from "../models/Express";
+
+const prisma = new PrismaClient();
 
 export class ProductsController {
 
     async getProducts(req:Request,res:Response){
-        const products = await Product.find()
-
+        const products = await prisma.product.findMany()
+        await prisma.$disconnect();
         return res.json({"response":products})
     }
 
@@ -18,24 +20,30 @@ export class ProductsController {
         const {name,price,description,marca} = req.body
 
         try {
-            const product = new Product({
-                name,
-                price,
-                description,
-                marca
+            const product = await prisma.product.create({
+                data: {
+                    name,
+                    price,
+                    description,
+                    marca
+                }
             })
-
-            await product.save()
+            await prisma.$disconnect()
             return res.json({message:"product is created",product:{name,price,description,marca}}).status(200)
         } catch(err){
             console.error(err)
+            await prisma.$disconnect()
             return res.json({message:"error"}).status(400)
         }
     }
     async getProductById(req:Request,res:Response){
         const { id } = req.params;
-        const product = await Product.findById(id);
-
+        const product = await prisma.product.findFirst({
+            where:{
+                id : parseInt(id)
+            }
+        });
+        await prisma.$disconnect();
         return res.json({product}).status(200)
     }
 
@@ -50,7 +58,17 @@ export class ProductsController {
         const { id } = req.params
         const {name,price,description} = req.body
         try {
-            await Product.findByIdAndUpdate(id,{name,price,description});
+            await prisma.product.update({
+                where:{
+                    id:parseInt(id)
+                },
+                data:{
+                    name,
+                    price,
+                    description
+                }
+            })
+            await prisma.$disconnect();
             return res.json({
                 response:req.body
             })
@@ -64,11 +82,14 @@ export class ProductsController {
         const { id } = req.params
 
         try {
-            await Product.findByIdAndDelete(id)
+            await prisma.product.delete({where:{id:parseInt(id)}})
+            await prisma.$disconnect();
             return res.json({
                 response: id
             }).status(204)
         }catch( err ) {
+            console.error(err);
+            await prisma.$disconnect();
             return res.json({
                 response:"no se pudo eliminar el objeto"
             })

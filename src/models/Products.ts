@@ -1,7 +1,6 @@
-import { Schema } from "mongoose";
 export interface IProducts {
     name:string;
-    price:Schema.Types.Decimal128;
+    price:number;
     description?:string,
     marca?:string
 }

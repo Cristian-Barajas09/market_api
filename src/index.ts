@@ -1,7 +1,6 @@
 import express from "express";
 import { Application } from "express";
 import products from "./routes/products";
-import './config/database';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import user from "./routes/user";

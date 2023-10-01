@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
-
+import { config } from "dotenv";
+config();
 export class Utils {
 
-    APISECRET = "secret"
+    APISECRET = process.env.APISECRET ?? '';
 
     async encryptPassword(password:string) {
         const salt = await bcrypt.genSalt(12);

@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { CustomRequest } from "../models/Express";
 import { UserResponse } from "../models/Users";
-import { User } from "../schema/Users";
 import { Utils } from "../utils/utils";
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export class UserController {
 
@@ -12,7 +14,11 @@ export class UserController {
         const { id } = req.params
 
         try {
-            const user = await User.findById(id);
+            const user = await prisma.user.findFirst({
+                where:{
+                    id:parseInt(id)
+                }
+            });
             return res.json({user}).status(200)
         } catch (err) {
             return res.json({}).status(404)
@@ -28,23 +34,27 @@ export class UserController {
         try {
             const newPassword = await utils.encryptPassword(password);
 
-            const newUser = new  User({
-                name,lastname,email,password:newPassword
+            const newUser = await prisma.user.create({
+                data:{
+                    name,
+                    lastname,
+                    email,
+                    password:newPassword
+                }
             })
-            await newUser.save();
-            const token = jwt.sign(newUser.toJSON(),utils.APISECRET)
-
+            
+            const token = jwt.sign(newUser,utils.APISECRET)
+            await prisma.$disconnect();
             return res.json({token}).status(201);
         }catch(err) {
             console.error(err);
+            await prisma.$disconnect();
             return res.json({response:'a ocurrido un error'}).status(400);
         }
     }
 
     async getUsers(req:Request,res:Response) {
-        const users = await User.find().then((data)=>data.map(({name,email,lastname})=> {
-            return {name,lastname,email}
-        }))
+        const users = await prisma.user.findMany({select:{name:true,lastname:true,email:true}})
 
         return res.json({users})
     }
@@ -53,7 +63,11 @@ export class UserController {
         const {email,password} = req.body
         const utils = new Utils();
 
-        const user = await User.findOne().where(email)
+        const user =await prisma.user.findFirst({
+            where:{
+                email
+            }
+        })
 
         if (!user) {
             return res.status(403)
@@ -63,8 +77,7 @@ export class UserController {
 
         if(!match) return res.status(403)
 
-        const token = jwt.sign(user.toJSON(),utils.APISECRET)
+        const token = jwt.sign(user,utils.APISECRET)
         return res.json({token})
     }
-
 }

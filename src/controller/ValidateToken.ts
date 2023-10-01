@@ -12,11 +12,16 @@ export const validateToken = {
 
         token = token.replace('Bearer ','')
 
-        console.log(jwt.verify(token,utils.APISECRET))
-
-        if(!jwt.verify(token,utils.APISECRET)) {
+        try {
+            const decoded = jwt.verify(token,utils.APISECRET)
+            if(!decoded) {
+                return res.status(403).json({response:"invalidated token"})
+            }
+        } catch(err) {
             return res.status(403).json({response:"invalidated token"})
         }
+
+        
 
         next();
     }

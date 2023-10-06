@@ -56,7 +56,7 @@ export class ProductsController {
         }
     >,res:Response){
         const { id } = req.params
-        const {name,price,description} = req.body
+        const { name,price,description } = req.body
         try {
             await prisma.product.update({
                 where:{

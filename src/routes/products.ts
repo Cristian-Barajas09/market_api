@@ -9,7 +9,6 @@ router.route("/products")
     .post(validateToken.authenticated,productController.createProduct)
 
 router.route("/products/:id")
-
     .get(validateToken.authenticated,productController.getProductById)
     .put(validateToken.authenticated,productController.updateProduct)
     .delete(validateToken.authenticated,productController.deleteProduct)

@@ -6,7 +6,9 @@ import swaggerUi from 'swagger-ui-express';
 import user from "./routes/user";
 import { config } from 'dotenv';
 import {join,resolve} from 'path'
+import cors from 'cors';
 import { validateToken } from "./controller/ValidateToken";
+import morgan from 'morgan';
 config();
 
 const app : Application = express();
@@ -29,21 +31,21 @@ const options:swaggerJSDoc.Options = {
         host:`http://localhost:${app.get("port")}`,
         servers:[{url:`http://localhost:${app.get("port")}`}]
     },
-    apis:['./routes/*.js','./routes/*.ts']
+    apis:['./routes/*.js']
 }
-
+console.log(options)
 const swaggerSpec = swaggerJSDoc(options);
 
 
 
 
 //midlewares
-
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-
+app.use(morgan('dev'))
+app.use(cors())
 //routes
-app.use(`${PREFIX}/docs`,swaggerUi.serve,swaggerUi.setup(swaggerSpec))
+app.use(`${PREFIX}/docs`,swaggerUi.serve,swaggerUi.setup(swaggerSpec,{explorer:true}))
 app.use(PREFIX,products);
 app.use(`${PREFIX}/users`,user);
 
